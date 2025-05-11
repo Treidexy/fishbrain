@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -27,58 +25,124 @@ class MainApp extends StatelessWidget {
           ),
           actions: [IconButton(onPressed: () {}, icon: Icon(Icons.person))],
         ),
-        body: Center(
-          child: SizedBox(
-            width: 750,
-            child: Column(
-              children: [
-                SizedBox(height: 50),
-                AssignmentItem(
-                  "Theme Exploration Journal",
-                  grade: 0,
-                  maxGrade: 10,
+        body: Column(
+          children: [
+            SizedBox(height: 50),
+            Center(
+              child: SizedBox(
+                width: 750,
+                child: AssignmentList(
+                  assignments: [
+                    AssignmentInfo(
+                      title: "Theme Exploration Journal",
+                      grade: 0,
+                      maxGrade: 10,
+                    ),
+                    AssignmentInfo(
+                      title: "Thematic Web",
+                      grade: 20,
+                      maxGrade: 20,
+                      dueDate: DateTime.parse("2025-06-02"),
+                    ),
+                    AssignmentInfo(
+                      title: "Theme-Focused Analytical Paragraph",
+                      maxGrade: 15,
+                      dueDate: DateTime.parse("2025-05-12"),
+                      description:
+                          "In small groups (3-4 students), you will create a visual \"thematic web\" for Macbeth. Choose one central theme that resonates strongly with the play (e.g., ambition). Then, brainstorm and connect at least five related ideas, characters, events, or symbols from the play that contribute to or illustrate this central theme. For each connection, include a brief explanation (1-2 sentences) of the relationship. You can use Google Drawings, Jamboard, or another collaborative visual tool.",
+                    ),
+                    AssignmentInfo(
+                      title: "\"What If?\" Thematic Extension",
+                      maxGrade: 0,
+                      dueDate: DateTime.parse("2025-05-08"),
+                    ),
+                  ],
                 ),
-                AssignmentItem(
-                  "Thematic Web",
-                  grade: 20,
-                  maxGrade: 20,
-                  dueDate: DateTime.parse("2025-06-02"),
-                ),
-                AssignmentExpansion(
-                  AssignmentItem(
-                    "Theme-Focused Analytical Paragraph",
-                    maxGrade: 15,
-                    dueDate: DateTime.parse("2025-05-12"),
-                  ),
-                  description:
-                      "In small groups (3-4 students), you will create a visual \"thematic web\" for Macbeth. Choose one central theme that resonates strongly with the play (e.g., ambition). Then, brainstorm and connect at least five related ideas, characters, events, or symbols from the play that contribute to or illustrate this central theme. For each connection, include a brief explanation (1-2 sentences) of the relationship. You can use Google Drawings, Jamboard, or another collaborative visual tool.",
-                ),
-                AssignmentItem(
-                  "\"What If?\" Thematic Extension",
-                  maxGrade: 0,
-                  dueDate: DateTime.parse("2025-05-08"),
-                ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 }
 
-class AssignmentItem extends StatelessWidget {
+class AssignmentList extends StatefulWidget {
+  final List<AssignmentInfo> assignments;
+  const AssignmentList({super.key, required this.assignments});
+
+  @override
+  State<StatefulWidget> createState() => _AssignmentListState();
+}
+
+class _AssignmentListState extends State<AssignmentList> {
+  int? expanded;
+
+  Widget item(BuildContext context, int i) {
+    if (i == expanded) {
+      return AssignmentExpansion(
+        widget.assignments[i],
+        onPressed: () {
+          setState(() {
+            expanded = null;
+          });
+        },
+      );
+    } else {
+      return AssignmentCard(
+        widget.assignments[i],
+        onPressed: () {
+          setState(() {
+            expanded = i;
+          });
+        },
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        for (int i = 0; i < widget.assignments.length; ++i)
+          // AnimatedSwitcher(
+          //   transitionBuilder: (child, animation) {
+          //     return SizeTransition(
+          //       axisAlignment: -1,
+          //       sizeFactor: animation,
+          //       child: child,
+          //     );
+          //   },
+          //   duration: Duration(milliseconds: 500),
+          //   child: item(context, i),
+          // ),
+          item(context, i),
+      ],
+    );
+  }
+}
+
+class AssignmentInfo {
   final String title;
+  final DateTime? dueDate;
   final num? grade;
   final num maxGrade;
-  final DateTime? dueDate;
-  const AssignmentItem(
-    this.title, {
-    super.key,
+  final String? description;
+
+  AssignmentInfo({
+    required this.title,
+    this.dueDate,
     this.grade,
     required this.maxGrade,
-    this.dueDate,
+    this.description,
   });
+}
+
+class AssignmentCard extends StatelessWidget {
+  final AssignmentInfo info;
+  final void Function() onPressed;
+
+  const AssignmentCard(this.info, {super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -90,21 +154,25 @@ class AssignmentItem extends StatelessWidget {
           ),
         ),
       ),
-      onPressed: () {},
+      onPressed: onPressed,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
         children: [
-          Row(children: [Icon(Icons.book), SizedBox(width: 5), Text(title)]),
+          Row(
+            children: [Icon(Icons.book), SizedBox(width: 5), Text(info.title)],
+          ),
           Row(
             children: [
-              // Text("${grade ?? ''}/$maxGrade"),
-              if (dueDate != null)
+              // Text("${info.grade ?? ''}/$info.maxGrade"),
+              if (info.dueDate != null)
                 Text(
-                  DateFormat.MMMd().format(dueDate!),
+                  DateFormat.MMMd().format(info.dueDate!),
                   style: TextStyle(
                     color:
-                        dueDate!.isBefore(DateTime.now()) ? Colors.red : null,
+                        info.dueDate!.isBefore(DateTime.now())
+                            ? Colors.red
+                            : null,
                   ),
                 ),
               // IconButton(onPressed: () {}, icon: Icon(Icons.link)),
@@ -117,9 +185,10 @@ class AssignmentItem extends StatelessWidget {
 }
 
 class AssignmentExpansion extends StatelessWidget {
-  final AssignmentItem item;
-  final String description;
-  const AssignmentExpansion(this.item, {super.key, required this.description});
+  final AssignmentInfo info;
+  final void Function() onPressed;
+
+  const AssignmentExpansion(this.info, {super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +202,7 @@ class AssignmentExpansion extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          item,
+          AssignmentCard(info, onPressed: onPressed),
           Container(
             width: double.infinity,
             margin: EdgeInsets.symmetric(horizontal: 10),
@@ -144,7 +213,7 @@ class AssignmentExpansion extends StatelessWidget {
                 BoxShadow(color: Theme.of(context).colorScheme.surface),
               ],
             ),
-            child: Text(description),
+            child: Text(info.description ?? ""),
           ),
           TextButton(onPressed: () {}, child: Text("View")),
         ],
