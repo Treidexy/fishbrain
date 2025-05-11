@@ -1,6 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+final assignmentInfoness = [
+  AssignmentInfo(title: "Theme Exploration Journal", grade: 0, maxGrade: 10),
+  AssignmentInfo(
+    title: "Thematic Web",
+    grade: 20,
+    maxGrade: 20,
+    dueDate: DateTime.parse("2025-06-02"),
+  ),
+  AssignmentInfo(
+    title: "Theme-Focused Analytical Paragraph",
+    maxGrade: 15,
+    dueDate: DateTime.parse("2025-05-12"),
+    description:
+        "In small groups (3-4 students), you will create a visual \"thematic web\" for Macbeth. Choose one central theme that resonates strongly with the play (e.g., ambition). Then, brainstorm and connect at least five related ideas, characters, events, or symbols from the play that contribute to or illustrate this central theme. For each connection, include a brief explanation (1-2 sentences) of the relationship. You can use Google Drawings, Jamboard, or another collaborative visual tool.",
+  ),
+  AssignmentInfo(
+    title: "\"What If?\" Thematic Extension",
+    maxGrade: 0,
+    dueDate: DateTime.parse("2025-05-08"),
+  ),
+];
+
 void main() {
   runApp(const MainApp());
 }
@@ -25,43 +47,26 @@ class MainApp extends StatelessWidget {
           ),
           actions: [IconButton(onPressed: () {}, icon: Icon(Icons.person))],
         ),
-        body: Column(
-          children: [
-            SizedBox(height: 50),
-            Center(
-              child: SizedBox(
-                width: 750,
-                child: AssignmentList(
-                  assignments: [
-                    AssignmentInfo(
-                      title: "Theme Exploration Journal",
-                      grade: 0,
-                      maxGrade: 10,
-                    ),
-                    AssignmentInfo(
-                      title: "Thematic Web",
-                      grade: 20,
-                      maxGrade: 20,
-                      dueDate: DateTime.parse("2025-06-02"),
-                    ),
-                    AssignmentInfo(
-                      title: "Theme-Focused Analytical Paragraph",
-                      maxGrade: 15,
-                      dueDate: DateTime.parse("2025-05-12"),
-                      description:
-                          "In small groups (3-4 students), you will create a visual \"thematic web\" for Macbeth. Choose one central theme that resonates strongly with the play (e.g., ambition). Then, brainstorm and connect at least five related ideas, characters, events, or symbols from the play that contribute to or illustrate this central theme. For each connection, include a brief explanation (1-2 sentences) of the relationship. You can use Google Drawings, Jamboard, or another collaborative visual tool.",
-                    ),
-                    AssignmentInfo(
-                      title: "\"What If?\" Thematic Extension",
-                      maxGrade: 0,
-                      dueDate: DateTime.parse("2025-05-08"),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+        body: Center(child: AssignmentPage(assignmentInfoness[2])),
+        // body: Center(child: AssignmentList(assignments: assignmentInfoness)),
+      ),
+    );
+  }
+}
+
+class AssignmentPage extends StatelessWidget {
+  final AssignmentInfo info;
+
+  const AssignmentPage(this.info, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(info.title)),
+
+      body: Container(
+        padding: EdgeInsets.all(15),
+        child: Text(info.description ?? ""),
       ),
     );
   }
@@ -102,22 +107,25 @@ class _AssignmentListState extends State<AssignmentList> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        for (int i = 0; i < widget.assignments.length; ++i)
-          // AnimatedSwitcher(
-          //   transitionBuilder: (child, animation) {
-          //     return SizeTransition(
-          //       axisAlignment: -1,
-          //       sizeFactor: animation,
-          //       child: child,
-          //     );
-          //   },
-          //   duration: Duration(milliseconds: 500),
-          //   child: item(context, i),
-          // ),
-          item(context, i),
-      ],
+    return SizedBox(
+      width: 750,
+      child: Column(
+        children: [
+          for (int i = 0; i < widget.assignments.length; ++i)
+            // AnimatedSwitcher(
+            //   transitionBuilder: (child, animation) {
+            //     return SizeTransition(
+            //       axisAlignment: -1,
+            //       sizeFactor: animation,
+            //       child: child,
+            //     );
+            //   },
+            //   duration: Duration(milliseconds: 500),
+            //   child: item(context, i),
+            // ),
+            item(context, i),
+        ],
+      ),
     );
   }
 }
@@ -129,7 +137,7 @@ class AssignmentInfo {
   final num maxGrade;
   final String? description;
 
-  AssignmentInfo({
+  const AssignmentInfo({
     required this.title,
     this.dueDate,
     this.grade,
