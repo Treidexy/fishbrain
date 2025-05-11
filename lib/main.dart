@@ -1,6 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:fishbrain/firebase_options.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:googleapis/docs/v1.dart' as d;
 import 'package:intl/intl.dart';
 
 final assignmentInfoness = [
@@ -25,7 +26,7 @@ final assignmentInfoness = [
   ),
 ];
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MainApp());
 }
@@ -62,7 +63,7 @@ class ClassPage extends StatelessWidget {
         actions: [IconButton(onPressed: () {}, icon: Icon(Icons.person))],
       ),
       // body: Center(child: AssignmentPage(assignmentInfoness[2])),
-      body: Center(child: body),
+      body: Center(child: Container(padding: EdgeInsets.all(15), child: body)),
     );
   }
 }
@@ -75,11 +76,30 @@ class AssignmentPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(info.title)),
+      appBar: AppBar(
+        title: Text(info.title),
+        actions: [ElevatedButton(onPressed: () {}, child: Text("Submit"))],
+      ),
 
-      body: Container(
-        padding: EdgeInsets.all(15),
-        child: Text(info.description ?? ""),
+      body: Column(
+        children: [
+          Text(info.description ?? ""),
+          Divider(height: 50),
+          Container(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            padding: EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("last saved 8:37pm"),
+                TextField(
+                  keyboardType: TextInputType.multiline,
+                  maxLines: null,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
