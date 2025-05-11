@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:googleapis/docs/v1.dart' as d;
 import 'package:intl/intl.dart';
 
 final assignmentInfoness = [
@@ -24,6 +26,7 @@ final assignmentInfoness = [
 ];
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MainApp());
 }
 
@@ -33,23 +36,33 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Fish Face",
+      title: "Fish Brain",
       theme: ThemeData.light(useMaterial3: true),
-      home: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(onPressed: () {}, icon: Icon(Icons.menu)),
-          title: Row(
-            children: [
-              Text("Classroom"),
-              Icon(Icons.chevron_right),
-              Text("English"),
-            ],
-          ),
-          actions: [IconButton(onPressed: () {}, icon: Icon(Icons.person))],
+      home: ClassPage(body: AssignmentList(assignments: assignmentInfoness)),
+    );
+  }
+}
+
+class ClassPage extends StatelessWidget {
+  final Widget body;
+  const ClassPage({super.key, required this.body});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(onPressed: () {}, icon: Icon(Icons.menu)),
+        title: Row(
+          children: [
+            Text("Classroom"),
+            Icon(Icons.chevron_right),
+            Text("English"),
+          ],
         ),
-        body: Center(child: AssignmentPage(assignmentInfoness[2])),
-        // body: Center(child: AssignmentList(assignments: assignmentInfoness)),
+        actions: [IconButton(onPressed: () {}, icon: Icon(Icons.person))],
       ),
+      // body: Center(child: AssignmentPage(assignmentInfoness[2])),
+      body: Center(child: body),
     );
   }
 }
@@ -91,6 +104,15 @@ class _AssignmentListState extends State<AssignmentList> {
           setState(() {
             expanded = null;
           });
+        },
+        onView: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      ClassPage(body: AssignmentPage(widget.assignments[i])),
+            ),
+          );
         },
       );
     } else {
@@ -195,8 +217,14 @@ class AssignmentCard extends StatelessWidget {
 class AssignmentExpansion extends StatelessWidget {
   final AssignmentInfo info;
   final void Function() onPressed;
+  final void Function() onView;
 
-  const AssignmentExpansion(this.info, {super.key, required this.onPressed});
+  const AssignmentExpansion(
+    this.info, {
+    super.key,
+    required this.onPressed,
+    required this.onView,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -223,7 +251,7 @@ class AssignmentExpansion extends StatelessWidget {
             ),
             child: Text(info.description ?? ""),
           ),
-          TextButton(onPressed: () {}, child: Text("View")),
+          TextButton(onPressed: onView, child: Text("View")),
         ],
       ),
     );
