@@ -4,7 +4,7 @@ publish_to: 'none'
 version: 0.1.0
 
 environment:
-  sdk: ^3.8.0-278.1.beta
+  sdk: ^3.7.2
 
 dependencies:
   firebase_auth: ^5.5.3
@@ -13,6 +13,8 @@ dependencies:
     sdk: flutter
   google_sign_in: ^6.3.0
   googleapis: ^14.0.0
+  googleapis_auth: ^2.0.0
+  http: ^1.4.0
   intl: ^0.20.2
 
 dev_dependencies:

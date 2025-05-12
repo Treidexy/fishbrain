@@ -2,6 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:fishbrain/firebase_options.dart';
 import 'package:flutter/material.dart';
+import 'package:googleapis/docs/v1.dart' as d;
+import 'package:googleapis_auth/auth_browser.dart' as google;
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 final assignmentInfoness = [
@@ -28,6 +31,37 @@ final assignmentInfoness = [
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  GoogleAuthProvider googleProvider = GoogleAuthProvider();
+  final userCredential = await FirebaseAuth.instance.signInWithPopup(
+    googleProvider,
+  );
+  final cred = await google.requestAccessCredentials(
+    clientId:
+        "21324585118-liplm5rq5174jaubqgmjkqbjshsjo02c.apps.googleusercontent.com",
+    scopes: [d.DocsApi.documentsScope],
+  );
+  final client = google.authenticatedClient(http.Client(), cred);
+  final docs = d.DocsApi(client);
+  await docs.documents.create(
+    d.Document(
+      title: "Hello, world!",
+      body: d.Body(
+        content: [
+          d.StructuralElement(
+            paragraph: d.Paragraph(
+              paragraphStyle: d.ParagraphStyle(lineSpacing: 3.0),
+              elements: [
+                d.ParagraphElement(
+                  richLink: d.RichLink(richLinkId: "https://google.com"),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
   runApp(const MainApp());
 }
 
@@ -199,9 +233,7 @@ class AssignmentCard extends StatelessWidget {
     return TextButton(
       style: ButtonStyle(
         shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadiusGeometry.circular(5),
-          ),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
         ),
       ),
       onPressed: onPressed,
