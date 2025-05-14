@@ -1,30 +1,21 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:fishbrain/firebase_options.dart';
+import 'package:fishbrain/google.dart';
 import 'package:flutter/material.dart';
-import 'package:googleapis/docs/v1.dart' as d;
-import 'package:googleapis_auth/auth_browser.dart' as google;
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 final assignmentInfoness = [
-  AssignmentInfo(title: "Theme Exploration Journal", grade: 0, maxGrade: 10),
-  AssignmentInfo(
-    title: "Thematic Web",
-    grade: 20,
-    maxGrade: 20,
-    dueDate: DateTime.parse("2025-06-02"),
-  ),
+  AssignmentInfo(title: "Theme Exploration Journal"),
+  AssignmentInfo(title: "Thematic Web", dueDate: DateTime.parse("2025-06-02")),
   AssignmentInfo(
     title: "Theme-Focused Analytical Paragraph",
-    maxGrade: 15,
     dueDate: DateTime.parse("2025-05-12"),
     description:
         "In small groups (3-4 students), you will create a visual \"thematic web\" for Macbeth. Choose one central theme that resonates strongly with the play (e.g., ambition). Then, brainstorm and connect at least five related ideas, characters, events, or symbols from the play that contribute to or illustrate this central theme. For each connection, include a brief explanation (1-2 sentences) of the relationship. You can use Google Drawings, Jamboard, or another collaborative visual tool.",
   ),
   AssignmentInfo(
     title: "\"What If?\" Thematic Extension",
-    maxGrade: 0,
     dueDate: DateTime.parse("2025-05-08"),
   ),
 ];
@@ -32,37 +23,10 @@ final assignmentInfoness = [
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  GoogleAuthProvider googleProvider = GoogleAuthProvider();
-  final userCredential = await FirebaseAuth.instance.signInWithPopup(
-    googleProvider,
-  );
-  final cred = await google.requestAccessCredentials(
-    clientId:
-        "21324585118-liplm5rq5174jaubqgmjkqbjshsjo02c.apps.googleusercontent.com",
-    scopes: [d.DocsApi.documentsScope],
-  );
-  final client = google.authenticatedClient(http.Client(), cred);
-  final docs = d.DocsApi(client);
-  await docs.documents.create(
-    d.Document(
-      title: "Hello, world!",
-      body: d.Body(
-        content: [
-          d.StructuralElement(
-            paragraph: d.Paragraph(
-              paragraphStyle: d.ParagraphStyle(lineSpacing: 3.0),
-              elements: [
-                d.ParagraphElement(
-                  richLink: d.RichLink(richLinkId: "https://google.com"),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-  runApp(const MainApp());
+  await FirebaseAuth.instance.signInWithPopup(GoogleAuthProvider());
+  await google();
+  // runApp(const MainApp());
+  await FirebaseAuth.instance.signOut();
 }
 
 class MainApp extends StatelessWidget {
@@ -209,17 +173,9 @@ class _AssignmentListState extends State<AssignmentList> {
 class AssignmentInfo {
   final String title;
   final DateTime? dueDate;
-  final num? grade;
-  final num maxGrade;
   final String? description;
 
-  const AssignmentInfo({
-    required this.title,
-    this.dueDate,
-    this.grade,
-    required this.maxGrade,
-    this.description,
-  });
+  const AssignmentInfo({required this.title, this.dueDate, this.description});
 }
 
 class AssignmentCard extends StatelessWidget {
