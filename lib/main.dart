@@ -25,8 +25,7 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await FirebaseAuth.instance.signInWithPopup(GoogleAuthProvider());
   await authorizeSession();
-  // runApp(const MainApp());
-  await FirebaseAuth.instance.signOut();
+  runApp(const MainApp());
 }
 
 class MainApp extends StatelessWidget {
@@ -37,7 +36,8 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       title: "Fish Brain",
       theme: ThemeData.light(useMaterial3: true),
-      home: ClassPage(body: AssignmentList(assignments: assignmentInfoness)),
+      home: HomePage(),
+      // home: ClassPage(body: AssignmentList(assignments: assignmentInfoness)),
     );
   }
 }
@@ -50,19 +50,25 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<(String, String)>? courses;
+  List<CoursePreview> courses = [];
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
 
-    courses = await 
+    previewCourses().then((l) {
+      setState(() {
+        courses = l;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
+    return Scaffold(
+      appBar: AppBar(title: Text("Hello")),
+      body: Column(children: [for (var course in courses) Text(course.title)]),
+    );
   }
 }
 

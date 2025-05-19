@@ -18,9 +18,13 @@ class CoursePreview {
 }
 
 Future<List<CoursePreview>> previewCourses() async {
-  final uid = FirebaseAuth.instance.currentUser!.uid;
-  final user = await FirebaseFirestore.instance.doc("users/$uid").get();
-  final courseIds = user.data()!['courses'];
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) {
+    return [];
+  }
+  final uid = user.uid;
+  final userDoc = await FirebaseFirestore.instance.doc("users/$uid").get();
+  final courseIds = userDoc.data()!['courses'];
   return <CoursePreview>[
     for (var id in courseIds)
       CoursePreview(id: id, title: (await classroomApi.courses.get(id)).name!),
