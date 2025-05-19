@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fishbrain/main.dart' show AssignmentInfo;
 import 'package:googleapis/classroom/v1.dart';
 import 'package:googleapis/docs/v1.dart' hide List;
 import 'package:googleapis/drive/v3.dart';
@@ -45,4 +46,16 @@ Future<void> authorizeSession() async {
   classroomApi = ClassroomApi(client);
   driveApi = DriveApi(client);
   docsApi = DocsApi(client);
+}
+
+Future<List<AssignmentInfo>> getAssignments(gcId) async {
+  final work = await classroomApi.courses.courseWork.list(gcId);
+  return [
+    for (var assignment in work.courseWork!)
+      AssignmentInfo(
+        title: assignment.title!,
+        dueDate: assignment.dueDate,
+        description: assignment.description,
+      ),
+  ];
 }

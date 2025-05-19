@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:fishbrain/firebase_options.dart';
 import 'package:fishbrain/backend.dart';
 import 'package:flutter/material.dart';
+import 'package:googleapis/classroom/v1.dart' show Date;
 import 'package:intl/intl.dart';
 
 final assignmentInfoness = [
@@ -36,6 +37,14 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       title: "Fish Brain",
       theme: ThemeData.light(useMaterial3: true),
+      initialRoute: "/",
+      routes: {
+        "/": (_) => HomePage(),
+        "/class":
+            (_) => ClassPage(
+              body: AssignmentList(assignments: assignmentInfoness),
+            ),
+      },
       home: HomePage(),
       // home: ClassPage(body: AssignmentList(assignments: assignmentInfoness)),
     );
@@ -67,14 +76,32 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Hello")),
-      body: Column(children: [for (var course in courses) Text(course.title)]),
+      body: Column(
+        children: [
+          for (var course in courses)
+            TextButton(onPressed: () {}, child: Text(course.title)),
+        ],
+      ),
     );
   }
 }
 
-class ClassPage extends StatelessWidget {
-  final Widget body;
-  const ClassPage({super.key, required this.body});
+class ClassPage extends StatefulWidget {
+  final String gcId;
+
+  const ClassPage({super.key, required this.gcId});
+
+  @override
+  State<StatefulWidget> createState() => _ClassPageState();
+}
+
+class _ClassPageState extends State<ClassPage> {
+  late final AssignmentList body;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -202,7 +229,7 @@ class _AssignmentListState extends State<AssignmentList> {
 
 class AssignmentInfo {
   final String title;
-  final DateTime? dueDate;
+  final Date? dueDate;
   final String? description;
 
   const AssignmentInfo({required this.title, this.dueDate, this.description});
