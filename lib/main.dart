@@ -3,14 +3,15 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:fishbrain/firebase_options.dart';
 import 'package:fishbrain/backend.dart';
 import 'package:flutter/material.dart';
-import 'package:googleapis/classroom/v1.dart' show Date;
 import 'package:intl/intl.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await FirebaseAuth.instance.signInWithPopup(GoogleAuthProvider());
-  await authorizeSession();
+  if (FirebaseAuth.instance.currentUser == null) {
+    await FirebaseAuth.instance.signInWithPopup(GoogleAuthProvider());
+    await authorizeSession();
+  }
   runApp(const MainApp());
 }
 
@@ -22,8 +23,8 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       title: "Fish Brain",
       theme: ThemeData.light(useMaterial3: true),
-      home: HomePage(),
-      // home: ClassPage(body: AssignmentList(assignments: assignmentInfoness)),
+      // home: HomePage(),
+      home: ClassPage(body: AssignmentList(gcId: "779557965768")),
     );
   }
 }
@@ -149,11 +150,11 @@ class _AssignmentListState extends State<AssignmentList> {
   void initState() {
     super.initState();
 
-    getAssignments(widget.gcId).then((list) {
-      setState(() {
-        assignments = list;
-      });
-    });
+    // getAssignments(widget.gcId).then((list) {
+    //   setState(() {
+    //     assignments = list;
+    //   });
+    // });
   }
 
   Widget item(BuildContext context, int i) {
@@ -205,6 +206,102 @@ class _AssignmentListState extends State<AssignmentList> {
             //   child: item(context, i),
             // ),
             item(context, i),
+          IconButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder:
+                    (context) =>
+                        Dialog(child: AddAssignment(gcId: widget.gcId)),
+              );
+            },
+            icon: Icon(Icons.add),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class AddAssignment extends StatefulWidget {
+  final String gcId;
+
+  const AddAssignment({super.key, required this.gcId});
+
+  @override
+  State<StatefulWidget> createState() => _AddAssignmentState();
+}
+
+class _AddAssignmentState extends State<AddAssignment> {
+  DateTime? dueDate;
+  final TextEditingController titleCtrl = TextEditingController();
+  final TextEditingController descCtrl = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(color: Theme.of(context).colorScheme.primaryContainer),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Text("Title"),
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 10),
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              boxShadow: [
+                BoxShadow(color: Theme.of(context).colorScheme.surface),
+              ],
+            ),
+            child: TextField(controller: titleCtrl),
+          ),
+          Text("Description"),
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 10),
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              boxShadow: [
+                BoxShadow(color: Theme.of(context).colorScheme.surface),
+              ],
+            ),
+            child: TextField(
+              controller: descCtrl,
+              keyboardType: TextInputType.multiline,
+              maxLines: null,
+            ),
+          ),
+          TextButton(
+            child: Text(
+              'Due Date ${dueDate == null ? "Not Set" : DateFormat.MMMd().format(dueDate!)}',
+            ),
+            onPressed: () {
+              setState(() async {
+                dueDate = await showDatePicker(
+                  context: context,
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime(9999),
+                );
+              });
+            },
+          ),
+          TextButton(
+            onPressed: () {
+              final assignment = AssignmentInfo(
+                title: titleCtrl.text,
+                description: descCtrl.text,
+                dueDate: dueDate,
+              );
+              postAssignment(widget.gcId, assignment);
+            },
+            child: Text("Post"),
+          ),
         ],
       ),
     );

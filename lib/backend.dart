@@ -48,9 +48,8 @@ Future<void> authorizeSession() async {
   docsApi = DocsApi(client);
 }
 
-Future<List<AssignmentInfo>> getAssignments(gcId) async {
+Future<List<AssignmentInfo>> getAssignments(String gcId) async {
   final work = await classroomApi.courses.courseWork.list(gcId);
-  print(work.courseWork![0].dueDate);
   return [
     for (var assignment in work.courseWork!)
       AssignmentInfo(
@@ -58,4 +57,17 @@ Future<List<AssignmentInfo>> getAssignments(gcId) async {
         description: assignment.description,
       ),
   ];
+}
+
+Future<void> postAssignment(String gcId, AssignmentInfo assignment) async {
+  final request = CourseWork(
+    title: assignment.title,
+    description: assignment.description,
+    dueDate: Date(
+      day: assignment.dueDate?.day,
+      month: assignment.dueDate?.month,
+      year: assignment.dueDate?.year,
+    ),
+  );
+  await classroomApi.courses.courseWork.create(request, gcId);
 }
