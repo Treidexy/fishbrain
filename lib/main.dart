@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:fishbrain/firebase_options.dart';
-import 'package:fishbrain/google.dart';
+import 'package:fishbrain/backend.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -24,7 +24,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await FirebaseAuth.instance.signInWithPopup(GoogleAuthProvider());
-  await google();
+  await authorizeSession();
   // runApp(const MainApp());
   await FirebaseAuth.instance.signOut();
 }
@@ -39,6 +39,30 @@ class MainApp extends StatelessWidget {
       theme: ThemeData.light(useMaterial3: true),
       home: ClassPage(body: AssignmentList(assignments: assignmentInfoness)),
     );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  List<(String, String)>? courses;
+
+  @override
+  void initState() async {
+    super.initState();
+
+    courses = await 
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    throw UnimplementedError();
   }
 }
 
