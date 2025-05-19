@@ -6,21 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:googleapis/classroom/v1.dart' show Date;
 import 'package:intl/intl.dart';
 
-final assignmentInfoness = [
-  AssignmentInfo(title: "Theme Exploration Journal"),
-  AssignmentInfo(title: "Thematic Web", dueDate: DateTime.parse("2025-06-02")),
-  AssignmentInfo(
-    title: "Theme-Focused Analytical Paragraph",
-    dueDate: DateTime.parse("2025-05-12"),
-    description:
-        "In small groups (3-4 students), you will create a visual \"thematic web\" for Macbeth. Choose one central theme that resonates strongly with the play (e.g., ambition). Then, brainstorm and connect at least five related ideas, characters, events, or symbols from the play that contribute to or illustrate this central theme. For each connection, include a brief explanation (1-2 sentences) of the relationship. You can use Google Drawings, Jamboard, or another collaborative visual tool.",
-  ),
-  AssignmentInfo(
-    title: "\"What If?\" Thematic Extension",
-    dueDate: DateTime.parse("2025-05-08"),
-  ),
-];
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -37,14 +22,6 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       title: "Fish Brain",
       theme: ThemeData.light(useMaterial3: true),
-      initialRoute: "/",
-      routes: {
-        "/": (_) => HomePage(),
-        "/class":
-            (_) => ClassPage(
-              body: AssignmentList(assignments: assignmentInfoness),
-            ),
-      },
       home: HomePage(),
       // home: ClassPage(body: AssignmentList(assignments: assignmentInfoness)),
     );
@@ -79,29 +56,26 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         children: [
           for (var course in courses)
-            TextButton(onPressed: () {}, child: Text(course.title)),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => AssignmentList(gcId: course.id),
+                  ),
+                );
+              },
+              child: Text(course.title),
+            ),
         ],
       ),
     );
   }
 }
 
-class ClassPage extends StatefulWidget {
-  final String gcId;
+class ClassPage extends StatelessWidget {
+  final Widget body;
 
-  const ClassPage({super.key, required this.gcId});
-
-  @override
-  State<StatefulWidget> createState() => _ClassPageState();
-}
-
-class _ClassPageState extends State<ClassPage> {
-  late final AssignmentList body;
-
-  @override
-  void initState() {
-    super.initState();
-  }
+  const ClassPage({super.key, required this.body});
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +91,6 @@ class _ClassPageState extends State<ClassPage> {
         ),
         actions: [IconButton(onPressed: () {}, icon: Icon(Icons.person))],
       ),
-      // body: Center(child: AssignmentPage(assignmentInfoness[2])),
       body: Center(child: Container(padding: EdgeInsets.all(15), child: body)),
     );
   }
@@ -161,20 +134,32 @@ class AssignmentPage extends StatelessWidget {
 }
 
 class AssignmentList extends StatefulWidget {
-  final List<AssignmentInfo> assignments;
-  const AssignmentList({super.key, required this.assignments});
+  final String gcId;
+  const AssignmentList({super.key, required this.gcId});
 
   @override
   State<StatefulWidget> createState() => _AssignmentListState();
 }
 
 class _AssignmentListState extends State<AssignmentList> {
+  List<AssignmentInfo> assignments = [];
   int? expanded;
+
+  @override
+  void initState() {
+    super.initState();
+
+    getAssignments(widget.gcId).then((list) {
+      setState(() {
+        assignments = list;
+      });
+    });
+  }
 
   Widget item(BuildContext context, int i) {
     if (i == expanded) {
       return AssignmentExpansion(
-        widget.assignments[i],
+        assignments[i],
         onPressed: () {
           setState(() {
             expanded = null;
@@ -184,15 +169,14 @@ class _AssignmentListState extends State<AssignmentList> {
           Navigator.of(context).push(
             MaterialPageRoute(
               builder:
-                  (context) =>
-                      ClassPage(body: AssignmentPage(widget.assignments[i])),
+                  (context) => ClassPage(body: AssignmentPage(assignments[i])),
             ),
           );
         },
       );
     } else {
       return AssignmentCard(
-        widget.assignments[i],
+        assignments[i],
         onPressed: () {
           setState(() {
             expanded = i;
@@ -208,7 +192,7 @@ class _AssignmentListState extends State<AssignmentList> {
       width: 750,
       child: Column(
         children: [
-          for (int i = 0; i < widget.assignments.length; ++i)
+          for (int i = 0; i < assignments.length; ++i)
             // AnimatedSwitcher(
             //   transitionBuilder: (child, animation) {
             //     return SizeTransition(
@@ -229,7 +213,7 @@ class _AssignmentListState extends State<AssignmentList> {
 
 class AssignmentInfo {
   final String title;
-  final Date? dueDate;
+  final DateTime? dueDate;
   final String? description;
 
   const AssignmentInfo({required this.title, this.dueDate, this.description});

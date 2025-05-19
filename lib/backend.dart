@@ -50,11 +50,11 @@ Future<void> authorizeSession() async {
 
 Future<List<AssignmentInfo>> getAssignments(gcId) async {
   final work = await classroomApi.courses.courseWork.list(gcId);
+  print(work.courseWork![0].dueDate);
   return [
     for (var assignment in work.courseWork!)
       AssignmentInfo(
         title: assignment.title!,
-        dueDate: assignment.dueDate,
         description: assignment.description,
       ),
   ];
