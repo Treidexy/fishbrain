@@ -23,8 +23,8 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       title: "Fish Brain",
       theme: ThemeData.light(useMaterial3: true),
-      // home: HomePage(),
-      home: ClassPage(body: AssignmentList(gcId: "779557965768")),
+      home: HomePage(),
+      // home: ClassPage(body: AssignmentList(gcId: "779557965768")),
     );
   }
 }
@@ -150,11 +150,11 @@ class _AssignmentListState extends State<AssignmentList> {
   void initState() {
     super.initState();
 
-    // getAssignments(widget.gcId).then((list) {
-    //   setState(() {
-    //     assignments = list;
-    //   });
-    // });
+    getAssignments(widget.gcId).then((list) {
+      setState(() {
+        assignments = list;
+      });
+    });
   }
 
   Widget item(BuildContext context, int i) {
@@ -277,18 +277,21 @@ class _AddAssignmentState extends State<AddAssignment> {
               maxLines: null,
             ),
           ),
+          Text("Due Date"),
           TextButton(
             child: Text(
-              'Due Date ${dueDate == null ? "Not Set" : DateFormat.MMMd().format(dueDate!)}',
+              dueDate == null ? "Not Set" : DateFormat.MMMd().format(dueDate!),
             ),
             onPressed: () {
-              setState(() async {
-                dueDate = await showDatePicker(
-                  context: context,
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime(9999),
-                );
-              });
+              showDatePicker(
+                context: context,
+                firstDate: DateTime.now(),
+                lastDate: DateTime(9999),
+              ).then(
+                (date) => setState(() {
+                  dueDate = date;
+                }),
+              );
             },
           ),
           TextButton(
@@ -299,6 +302,7 @@ class _AddAssignmentState extends State<AddAssignment> {
                 dueDate: dueDate,
               );
               postAssignment(widget.gcId, assignment);
+              Navigator.pop(context);
             },
             child: Text("Post"),
           ),
